@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    background-color: #f9f9f9;
+    color: #1a1c1c;
+  }
+
+  ::selection {
+    background-color: #e9ddff;
+    color: #5516be;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .ghost-border {
+    outline: 1px solid rgba(198, 198, 205, 0.15);
+  }
+
+  .premium-shadow {
+    box-shadow: 0 20px 40px -10px rgba(26, 28, 28, 0.06);
+  }
+
+  .domain-card-shadow {
+    box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.06);
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ─── Shimmer sweep ────────────────────────────────────────────────────────
+     Used on individual skeleton placeholder elements (title bar, button, etc.)
+     Sweeps a bright highlight left-to-right at full speed.
+  ───────────────────────────────────────────────────────────────────────── */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background: #ececec;
+    border-radius: 0.375rem;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.75) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmerSweep 1.4s ease-in-out infinite;
+  }
+
+  @keyframes shimmerSweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ─── Skeleton card wrapper ───────────────────────────────────────────────
+     The whole card breathes up/down in opacity so it feels alive.
+     Each card gets a stagger delay via inline style.
+  ───────────────────────────────────────────────────────────────────────── */
+  .skeleton-card {
+    animation: skeletonBreath 1.8s ease-in-out infinite;
+    animation-fill-mode: both;
+  }
+
+  @keyframes skeletonBreath {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(0.995);
+    }
+  }
+
+  /* ─── Card entrance ────────────────────────────────────────────────────────
+     Slide-up + fade as real domain cards animate in.
+     Use inline animationDelay for stagger.
+  ───────────────────────────────────────────────────────────────────────── */
+  .card-enter {
+    animation: cardEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes cardEnter {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* ─── Availability pill — "checking" state ────────────────────────────────
+     A continuous glow pulse while availability is still null.
+     Applied only to the "Checking…" pill, removed once status resolves.
+  ───────────────────────────────────────────────────────────────────────── */
+  .pill-checking {
+    animation: pillPulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pillPulse {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(85, 22, 190, 0);
+    }
+    40% {
+      opacity: 0.65;
+      box-shadow: 0 0 0 4px rgba(85, 22, 190, 0.12);
+    }
+    60% {
+      opacity: 0.65;
+      box-shadow: 0 0 0 6px rgba(85, 22, 190, 0.06);
+    }
+  }
+
+  /* ─── Availability resolved — quick pop-in ────────────────────────────────
+     Fires once when the pill changes from "Checking…" to Available/Taken.
+  ───────────────────────────────────────────────────────────────────────── */
+  .pill-resolved {
+    animation: pillPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes pillPop {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+}
+
+@layer utilities {
+  .font-headline {
+    font-family: var(--font-headline), 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  .font-body {
+    font-family: var(--font-body), 'Manrope', system-ui, sans-serif;
+  }
+}
