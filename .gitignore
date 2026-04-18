@@ -38,7 +38,7 @@ coverage/
 .DS_Store
 
 # vercel
-.vercel
+.vercel/
 
 # turbopack
 .turbo

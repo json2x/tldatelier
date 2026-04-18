@@ -21,20 +21,19 @@ function TopNav({
   onSearch: (q: string) => void
 }) {
   return (
-    <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-black/[0.05]">
+    <nav aria-label="Main navigation" className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-black/[0.05]">
       <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
-        {/* Logo */}
         <button
           type="button"
           onClick={() => window.location.reload()}
+          aria-label="Atelier — Return to homepage"
           className="text-2xl font-black text-black tracking-tighter font-headline"
         >
           Atelier
         </button>
 
-        {/* Inline search for results view */}
         {showSearch && (
-          <div className="flex-1 max-w-xl px-12">
+          <div className="flex-1 max-w-xl px-12" role="search">
             <SearchInput
               onSearch={onSearch}
               isLoading={isLoading}
@@ -184,18 +183,18 @@ function LandingView({ onSearch, isLoading }: { onSearch: (q: string) => void; i
       </section>
 
       {/* Footer */}
-      <footer className="w-full py-12 border-t border-black/[0.03] bg-white mt-8">
+      <footer className="w-full py-12 border-t border-black/[0.03] bg-white mt-8" role="contentinfo">
         <div className="flex flex-col items-center gap-6 px-8">
           <div className="text-lg font-black text-slate-900 font-headline tracking-tighter">Atelier</div>
-          <div className="flex gap-8">
+          <nav aria-label="Footer navigation" className="flex gap-8">
             {['Terms', 'Privacy', 'Status', 'Twitter'].map((link) => (
-              <a key={link} href="#" className="text-slate-400 font-body text-xs uppercase tracking-widest hover:text-purple-500 transition-colors opacity-80 hover:opacity-100">
+              <a key={link} href={`/${link.toLowerCase()}`} className="text-slate-400 font-body text-xs uppercase tracking-widest hover:text-purple-500 transition-colors opacity-80 hover:opacity-100">
                 {link}
               </a>
             ))}
-          </div>
+          </nav>
           <div className="text-slate-400 font-body text-[10px] uppercase tracking-[0.2em] mt-4">
-            © 2024 Atelier Domains. Crafted by AI.
+            © {new Date().getFullYear()} Atelier Domains. Crafted by AI.
           </div>
         </div>
       </footer>
@@ -317,14 +316,14 @@ function ResultsView({
         </div>
 
         {/* Footer */}
-        <footer className="mt-20 w-full py-12 border-t border-black/[0.03] flex flex-col items-center gap-6 px-8">
+        <footer role="contentinfo" className="mt-20 w-full py-12 border-t border-black/[0.03] flex flex-col items-center gap-6 px-8">
           <div className="text-lg font-black font-headline text-slate-900 tracking-tighter">Atelier</div>
-          <div className="flex gap-8 text-slate-400 font-body text-xs uppercase tracking-widest">
+          <nav aria-label="Footer navigation" className="flex gap-8 text-slate-400 font-body text-xs uppercase tracking-widest">
             {['Terms', 'Privacy', 'Status', 'Twitter'].map((link) => (
-              <a key={link} href="#" className="hover:text-purple-500 transition-colors opacity-80 hover:opacity-100">{link}</a>
+              <a key={link} href={`/${link.toLowerCase()}`} className="hover:text-purple-500 transition-colors opacity-80 hover:opacity-100">{link}</a>
             ))}
-          </div>
-          <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em]">© 2024 Atelier Domains. Crafted by AI.</p>
+          </nav>
+          <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em]">© {new Date().getFullYear()} Atelier Domains. Crafted by AI.</p>
         </footer>
       </main>
 
