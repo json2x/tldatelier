@@ -140,9 +140,78 @@ async function checkWithGodaddy(domains: string[]): Promise<DomainResult[]> {
   return allResults
 }
 
+// ─── Porkbun provider ─────────────────────────────────────────────────────────
+
+interface PorkbunCheckResponse {
+  status: 'SUCCESS' | 'ERROR'
+  response?: {
+    avail: 'yes' | 'no'
+  }
+  message?: string
+}
+
+/**
+ * Porkbun only supports single-domain checks. The API is rate-limited to
+ * 1 request per 10 seconds per account by default, so we add a 10 s delay
+ * between requests to stay within that limit.
+ */
+async function checkWithPorkbun(domains: string[]): Promise<DomainResult[]> {
+  const parsed = domains.map(parseDomain)
+  const apiKey = process.env.PORKBUN_API_KEY
+  const secretKey = process.env.PORKBUN_SECRET_KEY
+
+  if (!apiKey || !secretKey) {
+    return parsed.map((d) => ({ ...d, available: null }))
+  }
+
+  const results: DomainResult[] = []
+
+  for (let i = 0; i < domains.length; i++) {
+    const domain = domains[i]
+    const meta = parsed[i]
+
+    try {
+      const response = await fetch(
+        `https://api.porkbun.com/api/json/v3/domain/checkDomain/${encodeURIComponent(domain)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apikey: apiKey, secretapikey: secretKey }),
+          next: { revalidate: 0 },
+        },
+      )
+
+      if (!response.ok) {
+        console.error('[Porkbun] HTTP error:', response.status, response.statusText)
+        results.push({ ...meta, available: null })
+        continue
+      }
+
+      const data = (await response.json()) as PorkbunCheckResponse
+
+      if (data.status !== 'SUCCESS' || !data.response) {
+        console.error('[Porkbun] API error for', domain, ':', data.message)
+        results.push({ ...meta, available: null })
+        continue
+      }
+
+      results.push({ ...meta, available: data.response.avail === 'yes' })
+    } catch (err) {
+      console.error('[Porkbun] Request error for', domain, ':', err)
+      results.push({ ...meta, available: null })
+    }
+
+    if (i < domains.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 10_000))
+    }
+  }
+
+  return results
+}
+
 // ─── Public entry point ───────────────────────────────────────────────────────
 
-export type DomainProvider = 'namecheap' | 'godaddy'
+export type DomainProvider = 'namecheap' | 'godaddy' | 'porkbun'
 
 /**
  * Check availability for a batch of domains.
@@ -155,6 +224,8 @@ export async function checkDomainAvailability(domains: string[]): Promise<Domain
   switch (provider) {
     case 'namecheap':
       return checkWithNamecheap(domains)
+    case 'porkbun':
+      return checkWithPorkbun(domains)
     case 'godaddy':
     default:
       return checkWithGodaddy(domains)
