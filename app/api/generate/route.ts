@@ -41,13 +41,12 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Geo lookup — runs in parallel with nothing, just needs to finish before AI call
   const { countryCode, countryTlds } = await getGeoTlds(ip)
 
   try {
-    const domains = await generateDomains(input, countryTlds)
+    const domainResults = await generateDomains(input, countryTlds)
 
-    if (!domains.length) {
+    if (!domainResults.length) {
       return NextResponse.json(
         { error: 'AI returned no domain suggestions. Try a different input.' },
         { status: 502 }
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        domains,
+        domains: domainResults,
         countryCode: countryCode ?? null,
         countryTlds,
       },

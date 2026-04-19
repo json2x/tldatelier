@@ -14,6 +14,24 @@ EMERGING HOT:       .xyz .gg .so .to .sh .wtf .lol .fun .cool .vip .pro .plus .o
 NEW GTLD:           .page .web .link .blog .wiki .today .news .info
 `.trim()
 
+// ─── Tone definitions ─────────────────────────────────────────────────────────
+
+const TONE_DEFINITIONS = `
+Tone categories (assign 1–3 per domain name):
+- "Premium": Sophisticated, exclusive, high-end, luxury, professional
+- "Techy": Technical, developer-focused, engineering, digital, code-like
+- "Playful": Fun, whimsical, lighthearted, creative, quirky
+- "Bold": Strong, assertive, memorable, punchy, impactful
+- "Minimal": Clean, simple, concise, understated, elegant
+`.trim()
+
+// ─── Structured domain result ─────────────────────────────────────────────────
+
+export interface AIDomainResult {
+  domain: string
+  tone: string[]
+}
+
 // ─── Prompt builder ───────────────────────────────────────────────────────────
 
 function buildPrompt(input: string, countryTlds: string[]): string {
@@ -34,25 +52,28 @@ Rules:
 4. Be creative: compound words, portmanteaus, invented words, action verbs, evocative nouns.
 5. All lowercase. No spaces. No special chars except dots.
 6. DO NOT repeat the same name with different TLDs more than twice.
-7. Output ONLY a valid JSON array of 100 domain strings. No markdown, no explanation.
+7. For each domain, assign 1–3 tone tags from: "Premium", "Techy", "Playful", "Bold", "Minimal".
+8. Output ONLY a valid JSON array of 100 objects. No markdown, no explanation.
 
 TLD catalogue to draw from:
 ${TLD_CATALOGUE}${countrySection}
 
-Example format (DO NOT copy these, generate fresh ideas):
-["brandly.ai","getnovaapp.com","launchpad.co","streamify.app","forge.build","pixel.studio","nexus.cloud","hype.gg","brand.one","sprint.dev"]`
+${TONE_DEFINITIONS}
+
+Output format — each element must be an object with "domain" (string) and "tone" (string array):
+[{"domain":"brandly.ai","tone":["Techy","Minimal"]},{"domain":"getnovaapp.com","tone":["Bold","Premium"]},...]`
 }
 
 // ─── Generators ───────────────────────────────────────────────────────────────
 
-export async function generateDomains(input: string, countryTlds: string[] = []): Promise<string[]> {
+export async function generateDomains(input: string, countryTlds: string[] = []): Promise<AIDomainResult[]> {
   const provider = process.env.AI_PROVIDER ?? 'openai'
   return provider === 'claude'
     ? generateWithClaude(input, countryTlds)
     : generateWithOpenAI(input, countryTlds)
 }
 
-async function generateWithOpenAI(input: string, countryTlds: string[]): Promise<string[]> {
+async function generateWithOpenAI(input: string, countryTlds: string[]): Promise<AIDomainResult[]> {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
   const response = await client.chat.completions.create({
@@ -61,36 +82,38 @@ async function generateWithOpenAI(input: string, countryTlds: string[]): Promise
       {
         role: 'system',
         content:
-          'You are a domain name expert. You only respond with valid JSON arrays of domain strings. Never include explanation or markdown fences.',
+          'You are a domain name expert. You only respond with valid JSON arrays of domain objects with "domain" and "tone" fields. Never include explanation or markdown fences.',
       },
       { role: 'user', content: buildPrompt(input, countryTlds) },
     ],
     temperature: 0.9,
-    max_tokens: 3000,
+    max_tokens: 6000,
   })
 
   const content = response.choices[0]?.message?.content ?? '[]'
-  return parseDomainList(content)
+  return parseDomainResponse(content)
 }
 
-async function generateWithClaude(input: string, countryTlds: string[]): Promise<string[]> {
+async function generateWithClaude(input: string, countryTlds: string[]): Promise<AIDomainResult[]> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 3000,
+    max_tokens: 6000,
     system:
-      'You are a domain name expert. You only respond with valid JSON arrays of domain strings. Never include explanation or markdown fences.',
+      'You are a domain name expert. You only respond with valid JSON arrays of domain objects with "domain" and "tone" fields. Never include explanation or markdown fences.',
     messages: [{ role: 'user', content: buildPrompt(input, countryTlds) }],
   })
 
   const content = message.content[0]?.type === 'text' ? message.content[0].text : '[]'
-  return parseDomainList(content)
+  return parseDomainResponse(content)
 }
 
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
-function parseDomainList(raw: string): string[] {
+const VALID_TONES = new Set(['Premium', 'Techy', 'Playful', 'Bold', 'Minimal'])
+
+function parseDomainResponse(raw: string): AIDomainResult[] {
   try {
     const cleaned = raw
       .replace(/```json\n?/gi, '')
@@ -103,11 +126,27 @@ function parseDomainList(raw: string): string[] {
     const parsed = JSON.parse(match[0])
     if (!Array.isArray(parsed)) return []
 
+    const seen = new Set<string>()
+
     return parsed
-      .filter((d): d is string => typeof d === 'string')
-      .map((d) => d.toLowerCase().trim())
-      .filter((d) => d.includes('.') && d.length >= 4 && d.length <= 63)
-      .filter((d, i, arr) => arr.indexOf(d) === i) // deduplicate
+      .filter((item): item is { domain: string; tone: unknown } =>
+        typeof item === 'object' && item !== null && typeof item.domain === 'string'
+      )
+      .map((item) => {
+        const domain = item.domain.toLowerCase().trim()
+        const rawTones = Array.isArray(item.tone) ? item.tone : []
+        const tone = rawTones
+          .filter((t): t is string => typeof t === 'string' && VALID_TONES.has(t))
+        return { domain, tone }
+      })
+      .filter(({ domain }) =>
+        domain.includes('.') && domain.length >= 4 && domain.length <= 63
+      )
+      .filter(({ domain }) => {
+        if (seen.has(domain)) return false
+        seen.add(domain)
+        return true
+      })
       .slice(0, 100)
   } catch {
     return []

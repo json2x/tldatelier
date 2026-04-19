@@ -9,11 +9,12 @@ import type { DomainResult } from './types'
 function parseDomain(domain: string): Omit<DomainResult, 'available'> {
   const lower = domain.toLowerCase().trim()
   const dotIndex = lower.indexOf('.')
-  if (dotIndex === -1) return { domain: lower, name: lower, tld: '' }
+  if (dotIndex === -1) return { domain: lower, name: lower, tld: '', tone: [] }
   return {
     domain: lower,
     name: lower.slice(0, dotIndex),
     tld: lower.slice(dotIndex),
+    tone: [],
   }
 }
 

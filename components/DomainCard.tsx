@@ -120,9 +120,16 @@ export default function DomainCard({ domain, featured = false, index = 0 }: Doma
         </button>
       </div>
 
-      {/* Status pill */}
-      <div className="flex items-center gap-2 mb-8">
+      <div className="flex items-center gap-2 flex-wrap mb-8">
         <StatusPill available={domain.available} />
+        {domain.tone.map((t) => (
+          <span
+            key={t}
+            className="inline-flex items-center px-2 py-0.5 rounded-md bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-[9px] font-black uppercase tracking-wider"
+          >
+            {t}
+          </span>
+        ))}
       </div>
 
       {/* CTA */}

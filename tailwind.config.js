@@ -77,6 +77,10 @@ module.exports = {
           '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        slideUpDrawer: {
+          '0%': { transform: 'translateY(100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
@@ -85,6 +89,7 @@ module.exports = {
       animation: {
         loading: 'loading 1.5s infinite',
         'slide-up': 'slideUp 0.3s ease-out',
+        'slide-up-drawer': 'slideUpDrawer 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
         'fade-in': 'fadeIn 0.3s ease-out',
       },
     },

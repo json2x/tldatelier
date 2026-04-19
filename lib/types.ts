@@ -7,4 +7,5 @@ export interface DomainResult {
   available: boolean | null // null = unknown/checking
   tld: string
   name: string
+  tone: string[]
 }

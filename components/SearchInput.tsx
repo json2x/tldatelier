@@ -6,14 +6,10 @@ interface SearchInputProps {
   onSearch: (input: string) => void
   isLoading: boolean
   defaultValue?: string
-  compact?: boolean // for results nav
+  compact?: boolean
+  children?: React.ReactNode
 }
 
-const SUGGESTIONS = [
-  'SaaS Startup',
-  'Eco-friendly Fashion',
-  'AI Creative Agency',
-]
 
 const SURPRISE_PROMPTS = [
   'A mindfulness app for busy professionals',
@@ -24,7 +20,7 @@ const SURPRISE_PROMPTS = [
   'No-code website builder for creators',
 ]
 
-export default function SearchInput({ onSearch, isLoading, defaultValue = '', compact = false }: SearchInputProps) {
+export default function SearchInput({ onSearch, isLoading, defaultValue = '', compact = false, children }: SearchInputProps) {
   const [value, setValue] = useState(defaultValue)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -105,29 +101,7 @@ export default function SearchInput({ onSearch, isLoading, defaultValue = '', co
         </button>
       </div>
 
-      {/* Quick Suggestion Chips */}
-      <div className="flex flex-wrap justify-center gap-3 mt-6">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => { setValue(s); onSearch(s) }}
-            disabled={isLoading}
-            className="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-sm font-semibold hover:bg-surface-container-highest cursor-pointer transition-colors disabled:opacity-50"
-          >
-            {s}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={handleSurpriseMe}
-          disabled={isLoading}
-          className="px-4 py-2 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-sm font-bold flex items-center gap-1 cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50"
-        >
-          <span className="material-symbols-outlined text-xs">bolt</span>
-          Surprise Me
-        </button>
-      </div>
+      {children}
     </div>
   )
 }

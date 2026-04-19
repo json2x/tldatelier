@@ -28,6 +28,10 @@ pnpm-debug.log*
 
 # testing
 coverage/
+__tests__/
+
+# playwright
+.playwright-mcp/
 
 # editors & IDEs
 .vscode/
